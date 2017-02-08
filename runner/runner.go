@@ -1,14 +1,15 @@
 package runner
 
 import (
-	"bco/stressingtool/cache"
-	"bco/stressingtool/event"
-	"bco/stressingtool/job"
 	"fmt"
 	"math"
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/shimron/stressingtool/cache"
+	"github.com/shimron/stressingtool/event"
+	"github.com/shimron/stressingtool/job"
 
 	pb "github.com/hyperledger/fabric/protos"
 )

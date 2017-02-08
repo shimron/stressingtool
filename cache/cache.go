@@ -1,6 +1,6 @@
 package cache
 
-import "bco/stressingtool/job"
+import "github.com/shimron/stressingtool/job"
 import "sync"
 
 type JobStatMap struct {

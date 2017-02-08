@@ -1,9 +1,10 @@
 package main
 
 import (
-	"bco/stressingtool/job"
-	"bco/stressingtool/runner"
 	"fmt"
+
+	"github.com/shimron/stressingtool/job"
+	"github.com/shimron/stressingtool/runner"
 )
 
 func main() {
