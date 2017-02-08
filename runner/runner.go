@@ -198,7 +198,7 @@ func (jr *JobRunner) CollectStates() {
 	var totalExecutionCost int64
 	var totalConfirmCost int64
 	for _, jb := range jr.States.JobStats {
-		executionCost := jb.ExecutedTime.Sub(jb.CreateTime).Nanoseconds()
+		executionCost := jb.ExecutedTime.Sub(jb.SubmitTime).Nanoseconds()
 		if executionCost > 0 {
 			totalExecutionCost += executionCost
 			if minExecutionCost != 0 {

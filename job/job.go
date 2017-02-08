@@ -51,7 +51,7 @@ func (j *Job) Run() *JobStat {
 	return &JobStat{
 		JobID:        j.ID,
 		TXID:         txid,
-		CreateTime:   j.SubmitTime,
+		SubmitTime:   j.SubmitTime,
 		ExecutedTime: time.Now(),
 		IsDone:       isDone,
 		IsSuccess:    isSuccess,
