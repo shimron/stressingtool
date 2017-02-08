@@ -5,13 +5,12 @@ import (
 	"math"
 	"os"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/shimron/stressingtool/cache"
 	"github.com/shimron/stressingtool/event"
 	"github.com/shimron/stressingtool/job"
-
-	"sync"
 
 	pb "github.com/hyperledger/fabric/protos"
 )

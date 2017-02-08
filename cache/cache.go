@@ -1,7 +1,10 @@
 package cache
 
-import "github.com/shimron/stressingtool/job"
-import "sync"
+import (
+	"sync"
+
+	"github.com/shimron/stressingtool/job"
+)
 
 type JobStatMap struct {
 	JobStats map[string]*job.JobStat

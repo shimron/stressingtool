@@ -2,12 +2,10 @@ package event
 
 import (
 	"fmt"
-
-	"github.com/hyperledger/fabric/events/consumer"
-
+	"os"
 	"time"
 
-	"os"
+	"github.com/hyperledger/fabric/events/consumer"
 
 	pb "github.com/hyperledger/fabric/protos"
 )

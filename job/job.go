@@ -3,9 +3,8 @@ package job
 import (
 	"time"
 
-	"github.com/shimron/stressingtool/chaincode"
-
 	"github.com/satori/go.uuid"
+	"github.com/shimron/stressingtool/chaincode"
 )
 
 type Job struct {
