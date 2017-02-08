@@ -11,6 +11,8 @@ import (
 	"github.com/shimron/stressingtool/event"
 	"github.com/shimron/stressingtool/job"
 
+	"sync"
+
 	pb "github.com/hyperledger/fabric/protos"
 )
 
@@ -26,6 +28,7 @@ type JobRunner struct {
 	StartTime      time.Time
 	StopTime       time.Time
 	NoEventChan    chan struct{}
+	once           sync.Once
 }
 
 //NewJobRunner create a new JobRunner
@@ -38,71 +41,77 @@ func NewJobRunner(name string, concurrencyNum int, eventAddr string) *JobRunner 
 		NoEventChan:    make(chan struct{}),
 		States:         cache.NewJobStatMap(),
 		TxStats:        cache.NewTxStatMap(),
+		once:           sync.Once{},
 	}
 }
 
 //Execute execute jobs from job channel
 func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 
-	go jr.listenBlock(jr.EventAddr)
-	time.Sleep(2 * time.Second)
+	jr.once.Do(
+		func() {
+			go jr.listenBlock(jr.EventAddr)
+			time.Sleep(2 * time.Second)
 
-	jr.StartTime = time.Now()
+			jr.StartTime = time.Now()
 
-	if jr.ConcurrencyNum > 0 {
-		ticks := make(chan int, jr.ConcurrencyNum)
-		for i := 0; i < jr.ConcurrencyNum; i++ {
-			ticks <- 0
-		}
-	loop1:
-		for {
-			select {
-			case jb, ok := <-jobChan:
-				if !ok {
-					fmt.Println("chan was closed")
-					break loop1
-				}
-				<-ticks
-				fmt.Printf("receive new job:%s\n", jb.Name)
-				go func(jb *job.Job) {
-					js := jb.Run()
-					fmt.Printf("%s has done\n", jb.Name)
-					err := jr.States.Set(js)
-					if err != nil {
-						fmt.Printf("fail to set jobstat:%v\n", err)
-					}
+			if jr.ConcurrencyNum > 0 {
+				ticks := make(chan int, jr.ConcurrencyNum)
+				for i := 0; i < jr.ConcurrencyNum; i++ {
 					ticks <- 0
-				}(jb)
-			case <-jr.StopChan:
-				fmt.Printf("stopping job runner")
-				break loop1
-			}
-			runtime.Gosched()
-		}
-
-	} else {
-
-	loop2:
-		for {
-			select {
-			case jb, ok := <-jobChan:
-				if !ok {
-					fmt.Println("chan was closed")
-					break loop2
 				}
-				fmt.Printf("receive new job:%s\n", jb.Name)
-				go func(jb *job.Job) {
-					js := jb.Run()
-					jr.States.Set(js)
-				}(jb)
-			case <-jr.StopChan:
-				fmt.Printf("stopping job runner...")
-				break loop2
+			loop1:
+				for {
+					select {
+					case jb, ok := <-jobChan:
+						if !ok {
+							fmt.Println("chan was closed")
+							break loop1
+						}
+						<-ticks
+						fmt.Printf("receive new job:%s\n", jb.Name)
+						go func(jb *job.Job) {
+							js := jb.Run()
+							fmt.Printf("%s has done\n", jb.Name)
+							err := jr.States.Set(js)
+							if err != nil {
+								fmt.Printf("fail to set jobstat:%v\n", err)
+							}
+							ticks <- 0
+						}(jb)
+					case <-jr.StopChan:
+						fmt.Printf("stopping job runner")
+						break loop1
+					}
+					runtime.Gosched()
+				}
+
+			} else {
+
+			loop2:
+				for {
+					select {
+					case jb, ok := <-jobChan:
+						if !ok {
+							fmt.Println("chan was closed")
+							break loop2
+						}
+						fmt.Printf("receive new job:%s\n", jb.Name)
+						go func(jb *job.Job) {
+							js := jb.Run()
+							jr.States.Set(js)
+						}(jb)
+					case <-jr.StopChan:
+						fmt.Printf("stopping job runner...")
+						break loop2
+					}
+					runtime.Gosched()
+				}
 			}
-			runtime.Gosched()
-		}
-	}
-	jr.StopTime = time.Now()
+			jr.StopTime = time.Now()
+		},
+	)
+
 }
 
 func (jr *JobRunner) listenBlock(url string) {
