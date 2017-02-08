@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	// queryRunner := runner.NewJobRunner("query_runner", 100)
+	// queryRunner := runner.NewJobRunner("query_runner", 10, "127.0.0.1:7053")
 
 	// ch := make(chan *job.Job, 100)
 	// go func() {
@@ -25,10 +25,9 @@ func main() {
 	// 	}
 	// 	close(ch)
 	// }()
-	// go queryRunner.ListenBlock("122.224.6.212:7053")
-	// queryRunner.Execute(ch)
 
-	// time.Sleep(5 * time.Second)
+	// queryRunner.Execute(ch)
+	// <-queryRunner.NoEventChan
 	// queryRunner.CollectStates()
 
 	createUserRunner := runner.NewJobRunner("create_user_runner", 10, "127.0.0.1:7053")
