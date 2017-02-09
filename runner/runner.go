@@ -33,6 +33,10 @@ type JobRunner struct {
 //NewJobRunner create a new JobRunner
 func NewJobRunner(name string, concurrencyNum int, eventAddr string) *JobRunner {
 
+	if concurrencyNum <= 0 {
+		concurrencyNum = 10
+	}
+
 	return &JobRunner{
 		Name:           name,
 		ConcurrencyNum: concurrencyNum,
@@ -54,59 +58,36 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 
 		jr.StartTime = time.Now()
 
-		if jr.ConcurrencyNum > 0 {
-			ticks := make(chan struct{}, jr.ConcurrencyNum)
-			for i := 0; i < jr.ConcurrencyNum; i++ {
-				ticks <- struct{}{}
-			}
-		loop1:
-			for {
-				select {
-				case jb, ok := <-jobChan:
-					if !ok {
-						fmt.Println("chan was closed")
-						break loop1
-					}
-					<-ticks
-					fmt.Printf("receive new job:%s\n", jb.Name)
-					go func(jb *job.Job) {
-						js := jb.Run()
-						fmt.Printf("%s has done\n", jb.Name)
-						err := jr.States.Set(js)
-						if err != nil {
-							fmt.Printf("fail to set jobstat:%v\n", err)
-						}
-						ticks <- struct{}{}
-					}(jb)
-				case <-jr.StopChan:
-					fmt.Printf("stopping job runner")
-					break loop1
-				}
-				runtime.Gosched()
-			}
-
-		} else {
-
-		loop2:
-			for {
-				select {
-				case jb, ok := <-jobChan:
-					if !ok {
-						fmt.Println("chan was closed")
-						break loop2
-					}
-					fmt.Printf("receive new job:%s\n", jb.Name)
-					go func(jb *job.Job) {
-						js := jb.Run()
-						jr.States.Set(js)
-					}(jb)
-				case <-jr.StopChan:
-					fmt.Printf("stopping job runner...")
-					break loop2
-				}
-				runtime.Gosched()
-			}
+		ticks := make(chan struct{}, jr.ConcurrencyNum)
+		for i := 0; i < jr.ConcurrencyNum; i++ {
+			ticks <- struct{}{}
 		}
+	loop:
+		for {
+			select {
+			case jb, ok := <-jobChan:
+				if !ok {
+					fmt.Println("chan was closed")
+					break loop
+				}
+				<-ticks
+				fmt.Printf("receive new job:%s\n", jb.Name)
+				go func(jb *job.Job) {
+					js := jb.Run()
+					fmt.Printf("%s has done\n", jb.Name)
+					err := jr.States.Set(js)
+					if err != nil {
+						fmt.Printf("fail to set jobstat:%v\n", err)
+					}
+					ticks <- struct{}{}
+				}(jb)
+			case <-jr.StopChan:
+				fmt.Printf("stopping job runner")
+				break loop
+			}
+			runtime.Gosched()
+		}
+
 		jr.StopTime = time.Now()
 	},
 	)
