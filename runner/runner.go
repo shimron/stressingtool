@@ -169,6 +169,7 @@ func (jr *JobRunner) Stop() {
 		fmt.Printf("runner has been stopped")
 		return
 	}
+	jr.IsStopped = true
 	close(jr.StopChan)
 }
 
