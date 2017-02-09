@@ -32,6 +32,7 @@ type JobRunner struct {
 
 //NewJobRunner create a new JobRunner
 func NewJobRunner(name string, concurrencyNum int, eventAddr string) *JobRunner {
+
 	return &JobRunner{
 		Name:           name,
 		ConcurrencyNum: concurrencyNum,
@@ -49,7 +50,7 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 
 	jr.once.Do(func() {
 		go jr.listenBlock(jr.EventAddr)
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 
 		jr.StartTime = time.Now()
 
