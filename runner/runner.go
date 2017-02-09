@@ -216,7 +216,7 @@ func (jr *JobRunner) CollectStates() {
 			finishedCount++
 			continue
 		}
-
+		//未找到对应的txid对应的job stat，认为任务失败
 		txStat := jr.TxStats.Get(jb.TXID)
 		if txStat == nil {
 			failedCount++
@@ -224,7 +224,7 @@ func (jr *JobRunner) CollectStates() {
 		}
 
 		finishedCount++
-
+		//收到tx的block event认定为成功，收到rejection event认定为失败
 		if txStat.IsSuccess {
 			successCount++
 		} else {
