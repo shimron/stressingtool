@@ -38,7 +38,7 @@ func main() {
 
 		cmd := job.ChainCodeCommand{
 			URL:      "http://localhost:7050/chaincode",
-			CCID:     "0228fd806eb1fd984eea7208db229033be9a0e64fe4d9de7048bf8cf9958053cad5b457a85f5be6328780a9af16ac1129b53026cf83c786fc498f4c7872c7166",
+			CCID:     "7b590d6bed69fd1aa7bd3133d8c58cf3097ccc0649235858157d76972b679f0dd76229d903461c8b1b9c3a5f174e2c5919d0c39016e52b0d11ef1ffae866668f",
 			IsInvoke: true,
 		}
 		offset := 100

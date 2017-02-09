@@ -106,11 +106,14 @@ func (jr *JobRunner) listenBlock(url string) {
 		fmt.Printf("fail to create new event client")
 		os.Exit(-1)
 	}
+	var wg sync.WaitGroup
+loop:
 	for {
 		select {
 		case b := <-ec.Notify:
-
+			wg.Add(1)
 			go func(b *pb.Event_Block) {
+				defer wg.Done()
 				if len(b.Block.Transactions) != 0 {
 
 					blockTimestamp := b.Block.GetNonHashData().GetLocalLedgerCommitTimestamp()
@@ -133,7 +136,9 @@ func (jr *JobRunner) listenBlock(url string) {
 			}(b)
 
 		case r := <-ec.Rejected:
+			wg.Add(1)
 			go func(r *pb.Event_Rejection) {
+				defer wg.Done()
 				fmt.Printf("%s was rejected\n", r.Rejection.Tx.Txid)
 				//	time.Sleep(2 * time.Second)
 				js := jr.States.GetJobStatByTXID(r.Rejection.Tx.Txid)
@@ -150,11 +155,12 @@ func (jr *JobRunner) listenBlock(url string) {
 			}(r)
 
 		case <-time.After(20 * time.Second):
-			jr.NoEventChan <- struct{}{}
-
+			break loop
 		}
 		runtime.Gosched()
 	}
+	wg.Wait()
+	jr.NoEventChan <- struct{}{}
 }
 
 //Stop stop job runner
