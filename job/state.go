@@ -7,6 +7,7 @@ import (
 //JobStat ...
 type JobStat struct {
 	JobID           string    `json:"job_id"`
+	Name            string    `json:"name"`
 	TXID            string    `json:"txid"`
 	SubmitTime      time.Time `json:"submit_time"`
 	ExecutedTime    time.Time `json:"executed_time"`

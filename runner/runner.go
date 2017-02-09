@@ -91,9 +91,9 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 			}
 			runtime.Gosched()
 		}
-		fmt.Printf("waiting for jobs to be done...")
+		fmt.Println("waiting for jobs to be done...")
 		wg.Wait()
-		fmt.Printf("all jobs were executed")
+		fmt.Println("all jobs were executed")
 		jr.StopTime = time.Now()
 	},
 	)
@@ -171,6 +171,7 @@ func (jr *JobRunner) CollectStates() {
 	totalTimeCost := time.Now().Sub(jr.StartTime).Nanoseconds()
 	totalSubmitTimeCost := jr.StopTime.Sub(jr.StartTime).Nanoseconds()
 	jobCount := len(jr.States.JobStats)
+	var failedJobs = make([]string, 0, jobCount)
 	var successCount int
 	var failedCount int
 	var finishedCount int
@@ -208,6 +209,7 @@ func (jr *JobRunner) CollectStates() {
 		txStat := jr.TxStats.Get(jb.TXID)
 		if txStat == nil {
 			failedCount++
+			failedJobs = append(failedJobs, jb.Name)
 			continue
 		}
 
@@ -216,6 +218,7 @@ func (jr *JobRunner) CollectStates() {
 		if txStat.IsSuccess {
 			successCount++
 		} else {
+			failedJobs = append(failedJobs, jb.Name)
 			failedCount++
 			continue
 		}
@@ -254,4 +257,5 @@ func (jr *JobRunner) CollectStates() {
 	fmt.Printf("min confirm cost:%fs\n", minConfirmCost/1000000000)
 	fmt.Printf("max confirm cost:%fs\n", maxConfirmCost/1000000000)
 	fmt.Printf("avg confirm cost:%fs\n", avgConfirmCost/1000000000)
+	fmt.Printf("failed job names:%v\n", failedJobs)
 }

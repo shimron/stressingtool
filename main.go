@@ -38,10 +38,10 @@ func main() {
 
 		cmd := job.ChainCodeCommand{
 			URL:      "http://localhost:7050/chaincode",
-			CCID:     "21a559e5640d8e05aae9c54a5cd743f12223f60059319970fd0aa18981ba475121f29788a008ec864be31e0557d01649fb61d4c17175c93dad1ab6ae1c503055",
+			CCID:     "0228fd806eb1fd984eea7208db229033be9a0e64fe4d9de7048bf8cf9958053cad5b457a85f5be6328780a9af16ac1129b53026cf83c786fc498f4c7872c7166",
 			IsInvoke: true,
 		}
-		offset := 10000
+		offset := 100
 		for i := 1 + offset; i <= 10000+offset; i++ {
 			args := []string{"createUser", fmt.Sprintf(`{"userEmail":"test@test%d.com","userName":"test82_%d","userMobile":"test_%d","userIdentityID":"teyst2_%d","userPassword":"1232424"}`, i, i, i, i)}
 			cmd.Args = args
