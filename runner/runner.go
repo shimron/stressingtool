@@ -176,7 +176,6 @@ func (jr *JobRunner) Stop() {
 		return
 	}
 	close(jr.StopChan)
-	jr.StopTime = time.Now()
 }
 
 //CollectStates caculate summary info
