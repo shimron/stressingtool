@@ -62,6 +62,8 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 		for i := 0; i < jr.ConcurrencyNum; i++ {
 			ticks <- struct{}{}
 		}
+
+		var wg sync.WaitGroup
 	loop:
 		for {
 			select {
@@ -70,9 +72,11 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 					fmt.Println("chan was closed")
 					break loop
 				}
+				wg.Add(1)
 				<-ticks
 				fmt.Printf("receive new job:%s\n", jb.Name)
 				go func(jb *job.Job) {
+					defer wg.Done()
 					js := jb.Run()
 					fmt.Printf("%s has done\n", jb.Name)
 					err := jr.States.Set(js)
@@ -87,7 +91,7 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 			}
 			runtime.Gosched()
 		}
-
+		wg.Wait()
 		jr.StopTime = time.Now()
 	},
 	)
