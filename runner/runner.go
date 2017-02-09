@@ -91,7 +91,9 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 			}
 			runtime.Gosched()
 		}
+		fmt.Printf("waiting for jobs to be done...")
 		wg.Wait()
+		fmt.Printf("all jobs were executed")
 		jr.StopTime = time.Now()
 	},
 	)
@@ -242,7 +244,7 @@ func (jr *JobRunner) CollectStates() {
 	fmt.Println("********Summary*******")
 	fmt.Printf("total job count:%d\n", jobCount)
 	fmt.Printf("total time cost:%fs\n", float64(totalTimeCost)/1000000000)
-	fmt.Printf("total job submit time cost:%fs\n", float64(totalSubmitTimeCost)/1000000000)
+	fmt.Printf("total job execution time cost:%fs\n", float64(totalSubmitTimeCost)/1000000000)
 	fmt.Printf("finished job count:%d\n", finishedCount)
 	fmt.Printf("successful job count:%d\n", successCount)
 	fmt.Printf("failed job count:%d\n", failedCount)
