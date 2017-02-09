@@ -55,9 +55,9 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 			jr.StartTime = time.Now()
 
 			if jr.ConcurrencyNum > 0 {
-				ticks := make(chan int, jr.ConcurrencyNum)
+				ticks := make(chan struct{}, jr.ConcurrencyNum)
 				for i := 0; i < jr.ConcurrencyNum; i++ {
-					ticks <- 0
+					ticks <- struct{}{}
 				}
 			loop1:
 				for {
@@ -76,7 +76,7 @@ func (jr *JobRunner) Execute(jobChan <-chan *job.Job) {
 							if err != nil {
 								fmt.Printf("fail to set jobstat:%v\n", err)
 							}
-							ticks <- 0
+							ticks <- struct{}{}
 						}(jb)
 					case <-jr.StopChan:
 						fmt.Printf("stopping job runner")
