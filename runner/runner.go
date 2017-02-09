@@ -177,7 +177,8 @@ func (jr *JobRunner) CollectStates() {
 	totalTimeCost := time.Now().Sub(jr.StartTime).Nanoseconds()
 	totalSubmitTimeCost := jr.StopTime.Sub(jr.StartTime).Nanoseconds()
 	jobCount := len(jr.States.JobStats)
-	var failedJobs = make([]string, 0, jobCount)
+	//save 10 failed job name ( only used to  validate  transactions were failed exactly )
+	var failedJobs = make([]string, 0, 10)
 	var successCount int
 	var failedCount int
 	var finishedCount int
@@ -215,7 +216,9 @@ func (jr *JobRunner) CollectStates() {
 		txStat := jr.TxStats.Get(jb.TXID)
 		if txStat == nil {
 			failedCount++
-			failedJobs = append(failedJobs, jb.Name)
+			if len(failedJobs) < cap(failedJobs) {
+				failedJobs = append(failedJobs, jb.Name)
+			}
 			continue
 		}
 
@@ -224,8 +227,10 @@ func (jr *JobRunner) CollectStates() {
 		if txStat.IsSuccess {
 			successCount++
 		} else {
-			failedJobs = append(failedJobs, jb.Name)
 			failedCount++
+			if len(failedJobs) < cap(failedJobs) {
+				failedJobs = append(failedJobs, jb.Name)
+			}
 			continue
 		}
 		//仅计算写入ledger的交易确认时间
@@ -263,5 +268,5 @@ func (jr *JobRunner) CollectStates() {
 	fmt.Printf("min confirm cost:%fs\n", minConfirmCost/1000000000)
 	fmt.Printf("max confirm cost:%fs\n", maxConfirmCost/1000000000)
 	fmt.Printf("avg confirm cost:%fs\n", avgConfirmCost/1000000000)
-	fmt.Printf("failed job names:%v\n", failedJobs)
+	fmt.Printf("first 10 failed job names:%v\n", failedJobs)
 }
