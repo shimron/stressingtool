@@ -107,7 +107,8 @@ func (jr *JobRunner) listenBlock(url string) {
 			go func(b *pb.Event_Block) {
 				if len(b.Block.Transactions) != 0 {
 
-					blockTime := time.Unix(b.Block.GetNonHashData().GetLocalLedgerCommitTimestamp().Seconds, int64(b.Block.GetNonHashData().GetLocalLedgerCommitTimestamp().Nanos))
+					blockTimestamp := b.Block.GetNonHashData().GetLocalLedgerCommitTimestamp()
+					blockTime := time.Unix(blockTimestamp.Seconds, int64(blockTimestamp.Nanos))
 
 					for _, tx := range b.Block.Transactions {
 						fmt.Printf("%s was written to ledger\n", tx.Txid)
@@ -161,8 +162,8 @@ func (jr *JobRunner) Stop() {
 
 //CollectStates caculate summary info
 func (jr *JobRunner) CollectStates() {
-
-	totalCost := jr.StopTime.Sub(jr.StartTime).Nanoseconds()
+	totalTimeCost := time.Now().Sub(jr.StartTime).Nanoseconds()
+	totalSubmitTimeCost := jr.StopTime.Sub(jr.StartTime).Nanoseconds()
 	jobCount := len(jr.States.JobStats)
 	var successCount int
 	var failedCount int
@@ -236,7 +237,8 @@ func (jr *JobRunner) CollectStates() {
 
 	fmt.Println("********Summary*******")
 	fmt.Printf("total job count:%d\n", jobCount)
-	fmt.Printf("total time cost:%ds\n", totalCost*1.0/1000000000)
+	fmt.Printf("total time cost:%fs\n", float64(totalTimeCost)/1000000000)
+	fmt.Printf("total job submit time cost:%fs\n", float64(totalSubmitTimeCost)/1000000000)
 	fmt.Printf("finished job count:%d\n", finishedCount)
 	fmt.Printf("successful job count:%d\n", successCount)
 	fmt.Printf("failed job count:%d\n", failedCount)
